@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { test, expect } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { extractPage } from '../src/index';
@@ -7,8 +7,9 @@ import type { ElementNode, ImageDesc, ElementKind } from '../src/types';
 const here: string = dirname(fileURLToPath(import.meta.url));
 const fixture: string = join(here, 'fixtures', 'article.html');
 
-describe('extractPage (integration, real Chromium)', () => {
-  it('produces clean AI Markdown with an element map from a local HTML file', async () => {
+test.describe('extractPage (integration, real Chromium)', () => {
+  test('produces clean AI Markdown with an element map from a local HTML file', async () => {
+    test.setTimeout(60_000);
     const res = await extractPage(fixture, { describeImages: true });
 
     // Content preserved; ads and cookie banner removed.
@@ -38,5 +39,5 @@ describe('extractPage (integration, real Chromium)', () => {
     expect(hero?.kept).toBe(true);
     const pixel: ImageDesc | undefined = res.images.find((i) => i.src.includes('pixel.gif'));
     expect(pixel?.kept).toBe(false);
-  }, 60_000);
+  });
 });

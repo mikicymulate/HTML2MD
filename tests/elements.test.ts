@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -12,21 +12,21 @@ const html: string = readFileSync(join(here, 'fixtures', 'article.html'), 'utf8'
 const g = globalThis as unknown as Record<string, unknown>;
 let dom: JSDOM;
 
-beforeAll(() => {
+test.beforeAll(() => {
   dom = new JSDOM(html, { url: 'https://example.com/' });
   g.document = dom.window.document;
   g.window = dom.window;
   g.CSS = dom.window.CSS;
 });
 
-afterAll(() => {
+test.afterAll(() => {
   delete g.document;
   delete g.window;
   delete g.CSS;
 });
 
-describe('collectInteractive', () => {
-  it('maps form controls with correct kinds, labels, and metadata', () => {
+test.describe('collectInteractive', () => {
+  test('maps form controls with correct kinds, labels, and metadata', () => {
     const raw = collectInteractive({ maxElements: 500 });
     const byLabel = (l: string) => raw.find((r: RawElement) => r.label === l);
 
@@ -47,14 +47,14 @@ describe('collectInteractive', () => {
     expect(byLabel('Subscribe now')?.kind).toBe('submit');
   });
 
-  it('assigns sequential refs and skips hidden inputs', () => {
+  test('assigns sequential refs and skips hidden inputs', () => {
     const raw = collectInteractive({ maxElements: 500 });
     expect(raw[0]?.ref).toBe('e1');
     expect(raw.every((r: RawElement, i: number) => r.ref === 'e' + (i + 1))).toBe(true);
     expect(raw.some((r: RawElement) => r.name === 'csrf')).toBe(false);
   });
 
-  it('normalizes raw records into ElementNodes with interaction hints', () => {
+  test('normalizes raw records into ElementNodes with interaction hints', () => {
     const raw = collectInteractive({ maxElements: 500 });
     const submit = raw.find((r: RawElement) => r.label === 'Subscribe now');
     expect(submit).toBeDefined();

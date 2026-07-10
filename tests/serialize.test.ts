@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { test, expect } from '@playwright/test';
 import { serializeMarkdown } from '../src/serialize/markdown';
 import type { SerializeResult } from '../src/serialize/markdown';
 import type { ElementNode, ImageDesc } from '../src/types';
@@ -27,8 +27,8 @@ const images: ImageDesc[] = [
   { src: 'https://x/pixel.gif', description: '', source: 'none', kept: false, reason: 'tracking-pixel' },
 ];
 
-describe('serializeMarkdown', () => {
-  it('emits frontmatter, content, an Images section, and an element appendix', () => {
+test.describe('serializeMarkdown', () => {
+  test('emits frontmatter, content, an Images section, and an element appendix', () => {
     const { markdown, frontmatter }: SerializeResult = serializeMarkdown({
       url: 'https://example.com/',
       title: 'Widgets',
