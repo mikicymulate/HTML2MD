@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>The Great Article About Widgets</title>
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+    <script>
+      console.log('tracker loaded');
+    </script>
+  </head>
+  <body>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="advert" id="ad-top">BUY NOW! Sponsored advertisement content here.</div>
+    <img src="https://track.example.com/pixel.gif" width="1" height="1" alt="" />
+
+    <article>
+      <h1>The Great Article About Widgets</h1>
+      <p>
+        Widgets are small components that do useful things. This article explains, in
+        considerable and deliberately verbose detail, why widgets matter to modern software and
+        how they have evolved over the past several decades of engineering practice, tooling,
+        and design taste across many different teams and organisations worldwide.
+      </p>
+      <p>
+        In the second paragraph we continue the discussion with even more words so that the
+        Mozilla Readability algorithm confidently identifies this block as the primary readable
+        content of the document, rather than the surrounding boilerplate, navigation chrome, or
+        the promotional advertisement that sits above it in the markup.
+      </p>
+      <figure>
+        <img src="/images/widget-diagram.png" width="640" height="480" />
+        <figcaption>A labelled diagram of a typical widget assembly.</figcaption>
+      </figure>
+      <img src="/images/hero.jpg" width="800" height="600" alt="A red widget on a workbench" />
+    </article>
+
+    <section class="signup">
+      <h2>Sign up for widget news</h2>
+      <form id="signup-form" action="/subscribe" method="post">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" placeholder="Jane Doe" />
+
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" required placeholder="jane@example.com" />
+
+        <label for="bio">Short bio</label>
+        <textarea id="bio" name="bio"></textarea>
+
+        <label for="country">Country</label>
+        <select id="country" name="country">
+          <option value="us">United States</option>
+          <option value="uk">United Kingdom</option>
+          <option value="de">Germany</option>
+        </select>
+
+        <label><input type="checkbox" id="terms" name="terms" /> I accept the terms</label>
+
+        <input type="hidden" name="csrf" value="secret-token" />
+        <button type="submit">Subscribe now</button>
+      </form>
+    </section>
+
+    <div class="cookie-banner" id="cookie-consent">
+      We use cookies to improve your experience. <button>Accept</button>
+    </div>
+
+    <footer>© 2026 Widgets Inc.</footer>
+  </body>
+</html>

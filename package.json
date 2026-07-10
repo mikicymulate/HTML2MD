@@ -1,0 +1,67 @@
+{
+  "name": "html2md-ai",
+  "version": "0.1.0",
+  "description": "Turn any web page into clean, AI-consumable Markdown with an interactive-element map and image descriptions.",
+  "type": "module",
+  "bin": {
+    "html2md": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "html",
+    "markdown",
+    "ai",
+    "llm",
+    "playwright",
+    "readability",
+    "web-scraping",
+    "accessibility"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "commander": "^15.0.0",
+    "jsdom": "^29.1.1",
+    "playwright": "^1.61.1",
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "^26.1.1",
+    "@types/turndown": "^5.0.6",
+    "eslint": "^10.6.0",
+    "prettier": "^3.9.5",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10"
+  }
+}
