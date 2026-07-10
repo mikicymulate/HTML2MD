@@ -1,8 +1,8 @@
-import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
+import { chromium, type Browser, type BrowserContext, type Page, type Route } from 'playwright';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { AD_DOMAINS } from '../config/blocklist';
-import type { ExtractOptions } from '../types';
+import type { ExtractOptions, WaitUntil } from '../types';
 
 export interface RenderedPage {
   /** The live Playwright page, ready for extraction / interaction. */
@@ -18,6 +18,14 @@ export interface RenderedPage {
 
 export type InputKind = 'url' | 'file' | 'html';
 
+interface ResolvedExtractOptions extends ExtractOptions {
+  headless: boolean;
+  timeoutMs: number;
+  waitUntil: WaitUntil;
+  viewport: { width: number; height: number };
+  blockAds: boolean;
+}
+
 const DEFAULTS = {
   headless: true,
   timeoutMs: 30_000,
@@ -28,7 +36,7 @@ const DEFAULTS = {
 
 /** Classify a raw input string as a URL, a local file path, or a raw HTML document. */
 export function classifyInput(input: string): { kind: InputKind; value: string } {
-  const trimmed = input.trim();
+  const trimmed: string = input.trim();
   if (/^https?:\/\//i.test(trimmed) || /^file:\/\//i.test(trimmed)) {
     return { kind: 'url', value: trimmed };
   }
@@ -48,7 +56,7 @@ function hostMatchesBlocklist(host: string): boolean {
  * navigation (client-side redirects, meta refresh); retry after letting it settle.
  */
 export async function safeContent(page: Page): Promise<string> {
-  for (let attempt = 0; attempt < 4; attempt += 1) {
+  for (let attempt: number = 0; attempt < 4; attempt += 1) {
     try {
       return await page.content();
     } catch {
@@ -71,7 +79,7 @@ export async function renderPage(
   input: string,
   options: ExtractOptions = {},
 ): Promise<RenderedPage> {
-  const opts = { ...DEFAULTS, ...options };
+  const opts: ResolvedExtractOptions = { ...DEFAULTS, ...options };
   const browser: Browser = await chromium.launch({ headless: opts.headless });
   const context: BrowserContext = await browser.newContext({
     viewport: opts.viewport,
@@ -80,7 +88,7 @@ export async function renderPage(
   const page: Page = await context.newPage();
 
   if (opts.blockAds) {
-    await context.route('**/*', (route) => {
+    await context.route('**/*', (route: Route) => {
       let host: string;
       try {
         host = new URL(route.request().url()).hostname;
@@ -101,7 +109,7 @@ export async function renderPage(
     if (kind === 'html') {
       await page.setContent(value, { waitUntil: opts.waitUntil, timeout: opts.timeoutMs });
     } else {
-      const target = kind === 'file' ? pathToFileURL(resolve(value)).href : value;
+      const target: string = kind === 'file' ? pathToFileURL(resolve(value)).href : value;
       await page.goto(target, { waitUntil: opts.waitUntil, timeout: opts.timeoutMs });
     }
     // Best-effort settle for late-loading content; ignore timeouts.
@@ -116,12 +124,12 @@ export async function renderPage(
     }
   }
 
-  const html = await safeContent(page);
-  const title = await page.title().catch(() => '');
-  const currentUrl = page.url();
-  const url = kind === 'html' || currentUrl === 'about:blank' ? input : currentUrl;
+  const html: string = await safeContent(page);
+  const title: string = await page.title().catch(() => '');
+  const currentUrl: string = page.url();
+  const url: string = kind === 'html' || currentUrl === 'about:blank' ? input : currentUrl;
 
-  const close = async () => {
+  const close: () => Promise<void> = async () => {
     await context.close().catch(() => undefined);
     await browser.close().catch(() => undefined);
   };

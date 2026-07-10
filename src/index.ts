@@ -1,9 +1,13 @@
 import { renderPage, safeContent } from './render/renderer';
+import type { RenderedPage } from './render/renderer';
 import { sanitizeLivePage, extractContent } from './extract/clean';
+import type { ExtractedContent } from './extract/clean';
 import { mapElements } from './extract/elements';
 import { collectImages, describeImages } from './extract/images';
+import type { RawImage } from './extract/images';
 import { serializeMarkdown } from './serialize/markdown';
-import type { ExtractOptions, PageResult } from './types';
+import type { SerializeResult } from './serialize/markdown';
+import type { ExtractOptions, PageResult, ElementNode, ImageDesc } from './types';
 
 export type {
   ExtractOptions,
@@ -26,8 +30,8 @@ export async function extractPage(
   input: string,
   options: ExtractOptions = {},
 ): Promise<PageResult> {
-  const fetchedAt = new Date().toISOString();
-  const rendered = await renderPage(input, options);
+  const fetchedAt: string = new Date().toISOString();
+  const rendered: RenderedPage = await renderPage(input, options);
 
   try {
     // 1. Remove ads/trackers/cookie banners/scripts from the live DOM.
@@ -41,20 +45,20 @@ export async function extractPage(
     }
 
     // 3. Extract main content, interactive elements, and image descriptions in parallel.
-    const cleanedHtml = await safeContent(rendered.page);
-    const [elements, rawImages] = await Promise.all([
+    const cleanedHtml: string = await safeContent(rendered.page);
+    const [elements, rawImages]: [ElementNode[], RawImage[]] = await Promise.all([
       mapElements(rendered.page, { maxElements: options.maxElements }),
       rendered.page.evaluate(collectImages),
     ]);
-    const content = extractContent(cleanedHtml, rendered.url);
-    const images = await describeImages(rawImages, {
+    const content: ExtractedContent = extractContent(cleanedHtml, rendered.url);
+    const images: ImageDesc[] = await describeImages(rawImages, {
       describeImages: options.describeImages,
       visionCaptioner: options.visionCaptioner,
       minImageSize: options.minImageSize,
     });
 
-    const title = content.title || rendered.title || '';
-    const { markdown, contentMarkdown, frontmatter } = serializeMarkdown({
+    const title: string = content.title || rendered.title || '';
+    const { markdown, contentMarkdown, frontmatter }: SerializeResult = serializeMarkdown({
       url: rendered.url,
       title,
       contentHtml: content.contentHtml,

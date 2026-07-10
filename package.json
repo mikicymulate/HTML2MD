@@ -24,7 +24,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --project tsconfig.test.json",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",

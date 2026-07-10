@@ -29,9 +29,9 @@ program
   .option('--no-block-ads', 'do not block ad/analytics network requests')
   .option('--timeout <ms>', 'navigation timeout in milliseconds', '30000')
   .action(async (input: string, opts: CliOptions) => {
-    const outDir = resolve(opts.out, slugify(input));
+    const outDir: string = resolve(opts.out, slugify(input));
     await mkdir(outDir, { recursive: true });
-    const screenshotPath = opts.screenshot ? join(outDir, 'screenshot.png') : undefined;
+    const screenshotPath: string | undefined = opts.screenshot ? join(outDir, 'screenshot.png') : undefined;
 
     const result = await extractPage(input, {
       headless: opts.headless,
@@ -45,7 +45,7 @@ program
     await writeFile(join(outDir, 'elements.json'), JSON.stringify(result.elements, null, 2), 'utf8');
     await writeFile(join(outDir, 'images.json'), JSON.stringify(result.images, null, 2), 'utf8');
 
-    const keptImages = result.images.filter((i) => i.kept).length;
+    const keptImages: number = result.images.filter((i) => i.kept).length;
     process.stdout.write(`✓ ${join(outDir, 'page.md')}\n`);
     process.stdout.write(
       `  ${result.elements.length} interactive elements, ${keptImages} images described\n`,

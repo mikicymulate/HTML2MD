@@ -20,7 +20,7 @@ export interface ExtractedContent {
  * screenshot, not just the extracted HTML.
  */
 export async function sanitizeLivePage(page: Page, extraSelectors: string[] = []): Promise<void> {
-  const selectors = [...AD_SELECTORS, ...extraSelectors];
+  const selectors: string[] = [...AD_SELECTORS, ...extraSelectors];
   await page.evaluate((sels: string[]) => {
     for (const sel of sels) {
       let matched: NodeListOf<Element>;
@@ -29,12 +29,12 @@ export async function sanitizeLivePage(page: Page, extraSelectors: string[] = []
       } catch {
         continue; // skip selectors the browser rejects
       }
-      matched.forEach((node) => node.remove());
+      matched.forEach((node: Element) => node.remove());
     }
     // Strip HTML comments.
-    const root = document.documentElement;
+    const root: HTMLElement = document.documentElement;
     if (root) {
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT);
+      const walker: TreeWalker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT);
       const comments: Node[] = [];
       while (walker.nextNode()) comments.push(walker.currentNode);
       for (const c of comments) c.parentNode?.removeChild(c);
@@ -47,14 +47,14 @@ export async function sanitizeLivePage(page: Page, extraSelectors: string[] = []
  * falling back to the document body when Readability can't find an article.
  */
 export function extractContent(html: string, url: string): ExtractedContent {
-  const safeUrl = /^https?:|^file:/i.test(url) ? url : 'https://example.invalid/';
-  const dom = new JSDOM(html, { url: safeUrl });
-  const doc = dom.window.document;
+  const safeUrl: string = /^https?:|^file:/i.test(url) ? url : 'https://example.invalid/';
+  const dom: JSDOM = new JSDOM(html, { url: safeUrl });
+  const doc: Document = dom.window.document;
 
   // Readability mutates the document, so parse a clone and keep the original for fallback.
   let article: ReturnType<Readability['parse']>;
   try {
-    const clone = doc.cloneNode(true) as Document;
+    const clone: Document = doc.cloneNode(true) as Document;
     article = new Readability(clone).parse();
   } catch {
     article = null;

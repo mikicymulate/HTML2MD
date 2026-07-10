@@ -51,7 +51,7 @@ export function collectInteractive(opts: { maxElements: number }): RawElement[] 
   function esc(s: string): string {
     const g = globalThis as { CSS?: { escape?: (v: string) => string } };
     if (g.CSS && typeof g.CSS.escape === 'function') return g.CSS.escape(s);
-    return s.replace(/[^a-zA-Z0-9_-]/g, (c) => '\\' + c);
+    return s.replace(/[^a-zA-Z0-9_-]/g, (c: string) => '\\' + c);
   }
 
   function attrValue(s: string): string {
@@ -61,22 +61,22 @@ export function collectInteractive(opts: { maxElements: number }): RawElement[] 
   function isVisible(el: Element): boolean {
     const style = window.getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden') return false;
-    if (el.getAttribute('aria-hidden') === 'true') return false;
-    return true;
+    return el.getAttribute('aria-hidden') !== 'true';
+
   }
 
   function kindOf(el: Element): ElementKind {
-    const tag = el.tagName.toLowerCase();
-    const role = el.getAttribute('role');
+    const tag: string = el.tagName.toLowerCase();
+    const role: string | null = el.getAttribute('role');
     if (tag === 'select') return 'select';
     if (tag === 'textarea') return 'textarea';
     if (tag === 'a') return 'link';
     if (tag === 'button') {
-      const t = (el.getAttribute('type') || '').toLowerCase();
+      const t: string = (el.getAttribute('type') || '').toLowerCase();
       return t === 'submit' ? 'submit' : 'button';
     }
     if (tag === 'input') {
-      const t = (el.getAttribute('type') || 'text').toLowerCase();
+      const t: string = (el.getAttribute('type') || 'text').toLowerCase();
       if (t === 'checkbox') return 'checkbox';
       if (t === 'radio') return 'radio';
       if (t === 'submit' || t === 'image') return 'submit';
@@ -95,12 +95,12 @@ export function collectInteractive(opts: { maxElements: number }): RawElement[] 
   }
 
   function labelFor(el: Element): string {
-    const aria = el.getAttribute('aria-label');
+    const aria: string | null = el.getAttribute('aria-label');
     if (aria && aria.trim()) return aria.trim();
 
-    const labelledby = el.getAttribute('aria-labelledby');
+    const labelledby: string | null = el.getAttribute('aria-labelledby');
     if (labelledby) {
-      const text = labelledby
+      const text: string = labelledby
         .split(/\s+/)
         .map((id) => document.getElementById(id)?.textContent || '')
         .join(' ')
@@ -108,32 +108,32 @@ export function collectInteractive(opts: { maxElements: number }): RawElement[] 
       if (text) return text;
     }
 
-    const id = el.getAttribute('id');
+    const id: string | null = el.getAttribute('id');
     if (id) {
-      const lbl = document.querySelector('label[for="' + esc(id) + '"]');
-      const t = lbl?.textContent?.trim();
+      const lbl: Element | null = document.querySelector('label[for="' + esc(id) + '"]');
+      const t: string | undefined = lbl?.textContent?.trim();
       if (t) return t;
     }
 
     let p: Element | null = el.parentElement;
     while (p) {
       if (p.tagName === 'LABEL') {
-        const t = p.textContent?.trim();
+        const t: string | undefined = p.textContent?.trim();
         if (t) return t;
       }
       p = p.parentElement;
     }
 
-    const placeholder = el.getAttribute('placeholder');
+    const placeholder: string | null = el.getAttribute('placeholder');
     if (placeholder && placeholder.trim()) return placeholder.trim();
 
-    const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    const text: string = (el.textContent || '').replace(/\s+/g, ' ').trim();
     if (text) return text.slice(0, 120);
 
-    const val = el.getAttribute('value');
+    const val: string | null = el.getAttribute('value');
     if (val && val.trim()) return val.trim();
 
-    const title = el.getAttribute('title');
+    const title: string | null = el.getAttribute('title');
     if (title && title.trim()) return title.trim();
 
     return '';
@@ -143,10 +143,10 @@ export function collectInteractive(opts: { maxElements: number }): RawElement[] 
     const parts: string[] = [];
     let node: Element | null = el;
     while (node && node.nodeType === 1 && node.tagName.toLowerCase() !== 'html') {
-      let selector = node.tagName.toLowerCase();
+      let selector: string = node.tagName.toLowerCase();
       const parent: Element | null = node.parentElement;
       if (parent) {
-        const sameTag = Array.from(parent.children).filter((c) => c.tagName === node!.tagName);
+        const sameTag: Element[] = Array.from(parent.children).filter((c: Element) => c.tagName === node!.tagName);
         if (sameTag.length > 1) {
           selector += ':nth-of-type(' + (sameTag.indexOf(node) + 1) + ')';
         }
@@ -159,17 +159,17 @@ export function collectInteractive(opts: { maxElements: number }): RawElement[] 
   }
 
   function buildSelector(el: Element): string {
-    const id = el.getAttribute('id');
+    const id: string | null = el.getAttribute('id');
     if (id && document.querySelectorAll('#' + esc(id)).length === 1) return '#' + esc(id);
 
-    const tag = el.tagName.toLowerCase();
-    const name = el.getAttribute('name');
+    const tag: string = el.tagName.toLowerCase();
+    const name: string | null = el.getAttribute('name');
     if (name) {
-      const sel = tag + '[name="' + attrValue(name) + '"]';
+      let sel: string = tag + '[name="' + attrValue(name) + '"]';
       if (document.querySelectorAll(sel).length === 1) return sel;
     }
 
-    const testid = el.getAttribute('data-testid');
+    const testid: string | null = el.getAttribute('data-testid');
     if (testid) {
       const sel = '[data-testid="' + attrValue(testid) + '"]';
       if (document.querySelectorAll(sel).length === 1) return sel;
@@ -178,36 +178,36 @@ export function collectInteractive(opts: { maxElements: number }): RawElement[] 
     return cssPath(el);
   }
 
-  const seen = new Set<Element>();
-  const nodes = Array.from(document.querySelectorAll(INTERACTIVE_SELECTOR));
+  const seen: Set<Element> = new Set<Element>();
+  const nodes: Element[] = Array.from(document.querySelectorAll(INTERACTIVE_SELECTOR));
   const results: RawElement[] = [];
-  let counter = 0;
+  let counter: number = 0;
 
   for (const el of nodes) {
     if (results.length >= opts.maxElements) break;
     if (seen.has(el)) continue;
     seen.add(el);
 
-    const tag = el.tagName.toLowerCase();
-    const type = el.getAttribute('type');
+    const tag: string = el.tagName.toLowerCase();
+    const type: string | null = el.getAttribute('type');
     if (tag === 'input' && (type || '').toLowerCase() === 'hidden') continue;
     if (!isVisible(el)) continue;
 
-    const kind = kindOf(el);
+    const kind: ElementKind = kindOf(el);
     if (kind === 'other') continue;
 
     let options: string[] | null = null;
     if (tag === 'select') {
       options = Array.from(el.querySelectorAll('option'))
-        .map((o) => (o.textContent || '').replace(/\s+/g, ' ').trim())
-        .filter((t) => t.length > 0);
+        .map((o: HTMLOptionElement) => (o.textContent || '').replace(/\s+/g, ' ').trim())
+        .filter((t: string) => t.length > 0);
     }
 
-    const inputLike = tag === 'input' || tag === 'textarea' || tag === 'select';
-    const rawValue = inputLike ? (el as HTMLInputElement).value : null;
+    const inputLike: boolean = tag === 'input' || tag === 'textarea' || tag === 'select';
+    const rawValue: string | null = inputLike ? (el as HTMLInputElement).value : null;
 
     let box: RawElement['box'] = null;
-    const rect = el.getBoundingClientRect();
+    const rect: DOMRect = el.getBoundingClientRect();
     if (rect && (rect.width > 0 || rect.height > 0)) {
       box = {
         x: Math.round(rect.x),
@@ -242,7 +242,7 @@ export function collectInteractive(opts: { maxElements: number }): RawElement[] 
 }
 
 function howToInteract(kind: ElementKind, label: string): string {
-  const name = label || 'this element';
+  const name: string = label || 'this element';
   switch (kind) {
     case 'textfield':
       return `Type text into "${name}"`;
@@ -293,7 +293,7 @@ export async function mapElements(
   page: Page,
   options: { maxElements?: number } = {},
 ): Promise<ElementNode[]> {
-  const raw = await page.evaluate(collectInteractive, {
+  const raw: RawElement[] = await page.evaluate(collectInteractive, {
     maxElements: options.maxElements ?? 500,
   });
   return raw.map(normalizeElement);

@@ -18,10 +18,10 @@ export interface RawImage {
  * size. Self-contained for `page.evaluate` (and directly callable under jsdom in tests).
  */
 export function collectImages(): RawImage[] {
-  const imgs = Array.from(document.querySelectorAll('img'));
-  return imgs.map((img) => {
-    const rect = img.getBoundingClientRect();
-    let figcaption = '';
+  const imgs: HTMLImageElement[] = Array.from(document.querySelectorAll('img'));
+  return imgs.map((img: HTMLImageElement) => {
+    const rect: DOMRect = img.getBoundingClientRect();
+    let figcaption: string = '';
     let p: Element | null = img.parentElement;
     while (p) {
       if (p.tagName === 'FIGURE') {
@@ -67,7 +67,7 @@ function hostOf(src: string): string {
 }
 
 function isAdHost(host: string): boolean {
-  return AD_DOMAINS.some((d) => host === d || host.endsWith('.' + d));
+  return AD_DOMAINS.some((d: string) => host === d || host.endsWith('.' + d));
 }
 
 /**
@@ -78,7 +78,7 @@ export async function describeImages(
   images: RawImage[],
   options: DescribeImagesOptions = {},
 ): Promise<ImageDesc[]> {
-  const min = options.minImageSize ?? 64;
+  const min: number = options.minImageSize ?? 64;
   const results: ImageDesc[] = [];
 
   for (const img of images) {
@@ -95,14 +95,14 @@ export async function describeImages(
       results.push({ ...base, reason: 'no-src' });
       continue;
     }
-    const host = hostOf(img.src);
+    const host: string = hostOf(img.src);
     if (host && isAdHost(host)) {
       results.push({ ...base, reason: 'ad-domain' });
       continue;
     }
 
-    const altMeaningful = isMeaningfulText(img.alt);
-    const maxDim = Math.max(img.width, img.height);
+    const altMeaningful: boolean = isMeaningfulText(img.alt);
+    const maxDim: number = Math.max(img.width, img.height);
 
     // Tracking pixels / spacers.
     if (img.width > 0 && img.height > 0 && img.width <= 2 && img.height <= 2) {
@@ -121,7 +121,7 @@ export async function describeImages(
     }
 
     // Resolve a description in priority order.
-    let description = '';
+    let description: string = '';
     let source: ImageDescriptionSource = 'none';
     if (altMeaningful) {
       description = img.alt.trim();

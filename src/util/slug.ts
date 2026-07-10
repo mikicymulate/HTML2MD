@@ -1,11 +1,11 @@
 /** Derive a filesystem-safe slug from a URL, file path, or raw HTML input. */
 export function slugify(input: string): string {
-  let base = input.trim();
+  let base: string = input.trim();
 
   if (/^https?:\/\//i.test(base) || /^file:\/\//i.test(base)) {
     try {
-      const u = new URL(base);
-      const path = u.pathname.replace(/\/+$/, '').replace(/^\/+/, '');
+      const u: URL = new URL(base);
+      const path: string = u.pathname.replace(/\/+$/, '').replace(/^\/+/, '');
       base = [u.hostname, path].filter(Boolean).join('-');
     } catch {
       // fall through to generic cleanup
@@ -14,12 +14,12 @@ export function slugify(input: string): string {
     base = 'inline-html';
   } else {
     // Local file path: use the base filename without extension.
-    const parts = base.split(/[\\/]/);
+    const parts: string[] = base.split(/[\\/]/);
     base = parts[parts.length - 1] || 'page';
     base = base.replace(/\.[a-z0-9]+$/i, '');
   }
 
-  const slug = base
+  const slug: string = base
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')

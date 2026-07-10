@@ -22,7 +22,7 @@ export interface SerializeResult {
 }
 
 function createTurndown(): TurndownService {
-  const td = new TurndownService({
+  const td: TurndownService = new TurndownService({
     headingStyle: 'atx',
     codeBlockStyle: 'fenced',
     bulletListMarker: '-',
@@ -45,15 +45,15 @@ function inline(text: string): string {
 }
 
 function renderElement(el: ElementNode): string {
-  const heading = `### ${el.ref} · ${el.kind}${el.label ? ` — "${inline(el.label)}"` : ''}`;
-  const lines = [heading];
+  const heading: string = `### ${el.ref} · ${el.kind}${el.label ? ` — "${inline(el.label)}"` : ''}`;
+  const lines: string[] = [heading];
   if (el.name) lines.push(`- name: \`${el.name}\``);
   if (el.value) lines.push(`- value: ${inline(el.value)}`);
   if (el.placeholder) lines.push(`- placeholder: ${inline(el.placeholder)}`);
   if (el.required) lines.push('- required: true');
   if (el.disabled) lines.push('- disabled: true');
   if (el.options?.length) {
-    lines.push(`- options: ${el.options.map((o) => `\`${inline(o)}\``).join(', ')}`);
+    lines.push(`- options: ${el.options.map((o: string) => `\`${inline(o)}\``).join(', ')}`);
   }
   if (el.href) lines.push(`- href: ${el.href}`);
   lines.push(`- selector: \`${el.selector}\``);
@@ -66,10 +66,10 @@ function renderElement(el: ElementNode): string {
  * section (descriptions of the meaningful images), and an Interactive Elements appendix.
  */
 export function serializeMarkdown(input: SerializeInput): SerializeResult {
-  const td = createTurndown();
-  const contentMarkdown = td.turndown(input.contentHtml || '').trim();
+  const td: TurndownService = createTurndown();
+  const contentMarkdown: string = td.turndown(input.contentHtml || '').trim();
 
-  const keptImages = input.images.filter((i) => i.kept && i.description);
+  const keptImages: ImageDesc[] = input.images.filter((i: ImageDesc) => i.kept && i.description);
 
   const frontmatter: Record<string, unknown> = {
     url: input.url,

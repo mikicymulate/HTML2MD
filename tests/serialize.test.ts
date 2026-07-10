@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { serializeMarkdown } from '../src/serialize/markdown';
+import type { SerializeResult } from '../src/serialize/markdown';
 import type { ElementNode, ImageDesc } from '../src/types';
 
 const elements: ElementNode[] = [
@@ -28,7 +29,7 @@ const images: ImageDesc[] = [
 
 describe('serializeMarkdown', () => {
   it('emits frontmatter, content, an Images section, and an element appendix', () => {
-    const { markdown, frontmatter } = serializeMarkdown({
+    const { markdown, frontmatter }: SerializeResult = serializeMarkdown({
       url: 'https://example.com/',
       title: 'Widgets',
       contentHtml: '<p>Hello <strong>world</strong></p>',

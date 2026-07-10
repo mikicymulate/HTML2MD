@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { JSDOM } from 'jsdom';
-import { collectInteractive, normalizeElement } from '../src/extract/elements';
+import { collectInteractive, normalizeElement, type RawElement } from '../src/extract/elements';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const html = readFileSync(join(here, 'fixtures', 'article.html'), 'utf8');
+const here: string = dirname(fileURLToPath(import.meta.url));
+const html: string = readFileSync(join(here, 'fixtures', 'article.html'), 'utf8');
 
 // collectInteractive is written to run in a DOM context; provide one via jsdom globals.
 const g = globalThis as unknown as Record<string, unknown>;
@@ -28,7 +28,7 @@ afterAll(() => {
 describe('collectInteractive', () => {
   it('maps form controls with correct kinds, labels, and metadata', () => {
     const raw = collectInteractive({ maxElements: 500 });
-    const byLabel = (l: string) => raw.find((r) => r.label === l);
+    const byLabel = (l: string) => raw.find((r: RawElement) => r.label === l);
 
     const email = byLabel('Email address');
     expect(email?.kind).toBe('textfield');
@@ -50,13 +50,13 @@ describe('collectInteractive', () => {
   it('assigns sequential refs and skips hidden inputs', () => {
     const raw = collectInteractive({ maxElements: 500 });
     expect(raw[0]?.ref).toBe('e1');
-    expect(raw.every((r, i) => r.ref === 'e' + (i + 1))).toBe(true);
-    expect(raw.some((r) => r.name === 'csrf')).toBe(false);
+    expect(raw.every((r: RawElement, i: number) => r.ref === 'e' + (i + 1))).toBe(true);
+    expect(raw.some((r: RawElement) => r.name === 'csrf')).toBe(false);
   });
 
   it('normalizes raw records into ElementNodes with interaction hints', () => {
     const raw = collectInteractive({ maxElements: 500 });
-    const submit = raw.find((r) => r.label === 'Subscribe now');
+    const submit = raw.find((r: RawElement) => r.label === 'Subscribe now');
     expect(submit).toBeDefined();
     const node = normalizeElement(submit!);
     expect(node.howToInteract).toMatch(/Submit the form/);
