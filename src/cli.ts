@@ -9,6 +9,7 @@ interface CliOptions {
   out: string;
   describeImages: boolean;
   screenshot: boolean;
+  embedJson: boolean;
   headless: boolean;
   blockAds: boolean;
   timeout: string;
@@ -25,6 +26,7 @@ program
   .option('-o, --out <dir>', 'output directory', 'out')
   .option('--describe-images', 'describe meaningful images (alt/caption based)', false)
   .option('--screenshot', 'save a full-page screenshot of the cleaned page', false)
+  .option('--no-embed-json', 'do not embed the raw element/image JSON in page.md')
   .option('--no-headless', 'run the browser with a visible window')
   .option('--no-block-ads', 'do not block ad/analytics network requests')
   .option('--timeout <ms>', 'navigation timeout in milliseconds', '30000')
@@ -39,6 +41,7 @@ program
       describeImages: opts.describeImages,
       timeoutMs: Number(opts.timeout),
       screenshotPath,
+      embedJson: opts.embedJson,
     });
 
     await writeFile(join(outDir, 'page.md'), result.markdown, 'utf8');

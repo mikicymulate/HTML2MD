@@ -25,6 +25,7 @@ export { slugify } from './util/slug';
  * Turn a web page into AI-consumable Markdown plus a machine-readable element/image map.
  *
  * @param input A URL, a `file://` URL, a local HTML file path, or a raw HTML string.
+ * @param options
  */
 export async function extractPage(
   input: string,
@@ -68,6 +69,7 @@ export async function extractPage(
       byline: content.byline,
       excerpt: content.excerpt,
       screenshotPath,
+      embedJson: options.embedJson,
     });
 
     return {

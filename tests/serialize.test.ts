@@ -53,4 +53,39 @@ test.describe('serializeMarkdown', () => {
     // dropped image must not be rendered
     expect(markdown).not.toContain('pixel.gif');
   });
+
+  test('omits the JSON appendix unless embedJson is set', () => {
+    const { markdown }: SerializeResult = serializeMarkdown({
+      url: 'https://example.com/',
+      title: 'Widgets',
+      contentHtml: '<p>Hello</p>',
+      elements,
+      images,
+      fetchedAt: '2026-07-10T00:00:00Z',
+    });
+
+    expect(markdown).not.toContain('## Element Map (JSON)');
+    expect(markdown).not.toContain('## Image Map (JSON)');
+  });
+
+  test('embeds raw element/image JSON as fenced blocks when embedJson is set', () => {
+    const { markdown }: SerializeResult = serializeMarkdown({
+      url: 'https://example.com/',
+      title: 'Widgets',
+      contentHtml: '<p>Hello</p>',
+      elements,
+      images,
+      fetchedAt: '2026-07-10T00:00:00Z',
+      embedJson: true,
+    });
+
+    expect(markdown).toContain('## Element Map (JSON)');
+    expect(markdown).toContain('## Image Map (JSON)');
+    expect(markdown).toContain('```json');
+    // The embedded blocks are byte-identical to the sidecar JSON files…
+    expect(markdown).toContain(JSON.stringify(elements, null, 2));
+    expect(markdown).toContain(JSON.stringify(images, null, 2));
+    // …so even dropped images are present in the machine-readable copy.
+    expect(markdown).toContain('pixel.gif');
+  });
 });

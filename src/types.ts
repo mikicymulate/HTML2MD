@@ -102,6 +102,8 @@ export interface ExtractOptions {
   visionCaptioner?: VisionCaptioner;
   /** When set, capture a full-page screenshot to this path. */
   screenshotPath?: string;
+  /** Embed the raw element/image JSON in the Markdown as fenced code blocks. Default false. */
+  embedJson?: boolean;
   /** Extra CSS selectors to strip from the live page before extraction. */
   extraStripSelectors?: string[];
   /** Minimum rendered dimension (px) for an image to be considered meaningful. Default 64. */

@@ -27,7 +27,9 @@ URL / file://  ─▶  Renderer  ─▶  Cleaner  ─┬─▶ Content → Markd
   spacers, ad-domain and decorative images) and describes them via alt/caption/title, or an
   optional pluggable vision captioner.
 - **Serializer** (`src/serialize/markdown.ts`) — Turndown + GFM, YAML frontmatter, an Images
-  section, and an **Interactive Elements** appendix.
+  section, and an **Interactive Elements** appendix. By default it also appends the raw
+  `elements.json` / `images.json` as fenced code blocks, so a single `page.md` is fully
+  self-contained for an agent (pass `--no-embed-json` to omit them).
 
 ## Install
 
@@ -45,6 +47,7 @@ html2md <url|file> [options]
   -o, --out <dir>        output directory (default: "out")
   --describe-images      describe meaningful images (alt/caption based)
   --screenshot           save a full-page screenshot of the cleaned page
+  --no-embed-json        do not embed the raw element/image JSON in page.md (on by default)
   --no-headless          run the browser with a visible window
   --no-block-ads         do not block ad/analytics network requests
   --timeout <ms>         navigation timeout in ms (default: 30000)

@@ -13,6 +13,11 @@ export interface SerializeInput {
   byline?: string | null;
   excerpt?: string | null;
   screenshotPath?: string;
+  /**
+   * Append the raw element/image JSON (identical to the `elements.json` / `images.json`
+   * sidecar files) as fenced code blocks, making the Markdown self-contained. Default false.
+   */
+  embedJson?: boolean;
 }
 
 export interface SerializeResult {
@@ -42,6 +47,17 @@ function renderFrontmatter(obj: Record<string, unknown>): string {
 /** One `_`-escaped inline string safe to drop inside markdown emphasis/link text. */
 function inline(text: string): string {
   return text.replace(/\r?\n+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Wrap `data` as pretty-printed JSON in a fenced code block. The fence is grown longer than
+ * any run of backticks the JSON might contain so the block can never be broken out of.
+ */
+function jsonBlock(data: unknown): string {
+  const json: string = JSON.stringify(data, null, 2);
+  const longestRun: number = (json.match(/`+/g) ?? []).reduce((n, run) => Math.max(n, run.length), 0);
+  const fence: string = '`'.repeat(Math.max(3, longestRun + 1));
+  return `${fence}json\n${json}\n${fence}`;
 }
 
 function renderElement(el: ElementNode): string {
@@ -101,6 +117,23 @@ export function serializeMarkdown(input: SerializeInput): SerializeResult {
     for (const el of input.elements) {
       parts.push(renderElement(el), '');
     }
+  }
+
+  if (input.embedJson) {
+    parts.push(
+      '## Element Map (JSON)',
+      '',
+      "> Machine-readable copy of `elements.json` — every mapped interactive element.",
+      '',
+      jsonBlock(input.elements),
+      '',
+      '## Image Map (JSON)',
+      '',
+      "> Machine-readable copy of `images.json` — every image, kept or dropped, with the reason.",
+      '',
+      jsonBlock(input.images),
+      '',
+    );
   }
 
   const markdown = parts.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
