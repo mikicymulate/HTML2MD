@@ -69,7 +69,7 @@ as a tool call.
 Register with Claude Code:
 
 ```bash
-claude mcp add html2md -- node C:/dev/AI/HTML2MD/dist/mcp.js
+claude mcp add html2md -- node ${path/to/project}/HTML2MD/dist/mcp.js
 ```
 
 Or add to a `.mcp.json` / MCP client config:
@@ -79,7 +79,7 @@ Or add to a `.mcp.json` / MCP client config:
   "mcpServers": {
     "html2md": {
       "command": "node",
-      "args": ["C:/dev/AI/HTML2MD/dist/mcp.js"]
+      "args": ["%PATH/TO/PROJECT%/HTML2MD/dist/mcp.js"]
     }
   }
 }
