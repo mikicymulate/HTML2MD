@@ -60,6 +60,43 @@ node dist/cli.js https://example.com --out out --describe-images --screenshot
 # → out/example-com/page.md, elements.json, images.json, screenshot.png
 ```
 
+## MCP server (use with AI coding agents)
+
+The package ships an [MCP](https://modelcontextprotocol.io) stdio server (`html2md-mcp`,
+built to `dist/mcp.js`) so agents like Claude Code, Cursor, or Windsurf can extract pages
+as a tool call.
+
+Register with Claude Code:
+
+```bash
+claude mcp add html2md -- node C:/dev/AI/HTML2MD/dist/mcp.js
+```
+
+Or add to a `.mcp.json` / MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "html2md": {
+      "command": "node",
+      "args": ["C:/dev/AI/HTML2MD/dist/mcp.js"]
+    }
+  }
+}
+```
+
+Tools exposed (all accept a URL, local HTML file path, `file://` URL, or raw HTML string
+as `input`, plus `timeoutMs`, `blockAds`, `waitUntil`, `extraStripSelectors`):
+
+| Tool               | Returns                                                                  |
+| ------------------ | ------------------------------------------------------------------------ |
+| `extract_page`     | The full clean Markdown document (options: `describeImages`, `embedJson`, `maxElements`) |
+| `extract_elements` | Structured interactive-element map (`ref`, `kind`, `label`, `selector`, hints) |
+| `extract_images`   | Meaningful images with text descriptions; dropped images include a reason |
+
+Extraction failures are reported as tool errors (`isError`), so agents can recover
+without the server crashing.
+
 ## Library
 
 ```ts
