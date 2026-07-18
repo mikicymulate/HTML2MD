@@ -165,7 +165,7 @@ export function collectInteractive(opts: { maxElements: number }): RawElement[] 
     const tag: string = el.tagName.toLowerCase();
     const name: string | null = el.getAttribute('name');
     if (name) {
-      let sel: string = tag + '[name="' + attrValue(name) + '"]';
+      const sel: string = tag + '[name="' + attrValue(name) + '"]';
       if (document.querySelectorAll(sel).length === 1) return sel;
     }
 

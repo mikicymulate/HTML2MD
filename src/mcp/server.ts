@@ -9,7 +9,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
-import { extractPage } from '../index';
+import { crawlSite, extractPage } from '../index';
+import type { CrawlSummary } from '../index';
 import type { ExtractOptions, PageResult } from '../types';
 
 const SERVER_NAME = 'html2md';
@@ -108,6 +109,21 @@ function errorResult(err: unknown): CallToolResult {
     isError: true,
   };
 }
+
+const crawlPageSchema = z.object({
+  url: z.string(),
+  depth: z.number().int(),
+  ok: z.boolean(),
+  title: z.string().optional(),
+  error: z.string().optional(),
+  /** Full page Markdown, included only when `includeMarkdown` is set. */
+  markdown: z.string().optional(),
+});
+
+const crawlEdgeSchema = z.object({
+  from: z.string(),
+  to: z.array(z.string()),
+});
 
 const readOnlyAnnotations = { readOnlyHint: true, openWorldHint: true } as const;
 
@@ -214,6 +230,128 @@ export function createMcpServer(): McpServer {
           describeImages: true,
         });
         const output = { url: result.url, title: result.title, images: result.images };
+        return {
+          content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
+          structuredContent: output,
+        };
+      } catch (err) {
+        return errorResult(err);
+      }
+    },
+  );
+
+  server.registerTool(
+    'crawl_site',
+    {
+      title: 'Crawl a site to Markdown',
+      description:
+        'Starting from a seed URL, follow in-scope links breadth-first and extract each page to clean Markdown. Returns a page list, a link graph, and (optionally) per-page Markdown. Respects robots.txt and honors depth, page-count, scope, concurrency, and include/exclude limits. The `input` must be an http(s) URL.',
+      inputSchema: {
+        ...commonInputShape,
+        maxDepth: z
+          .number()
+          .int()
+          .nonnegative()
+          .optional()
+          .describe('Maximum link depth from the seed (seed = 0). Default 2'),
+        maxPages: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe('Hard cap on pages fetched. Default 25'),
+        concurrency: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe('Pages fetched in parallel. Default 3'),
+        scope: z
+          .enum(['host', 'domain', 'prefix'])
+          .optional()
+          .describe(
+            "Link scope: 'host' (same hostname, default), 'domain' (same base domain), or 'prefix' (same origin under the seed path)",
+          ),
+        delayMs: z
+          .number()
+          .int()
+          .nonnegative()
+          .optional()
+          .describe('Politeness delay (ms) per worker between fetches. Default 0'),
+        include: z
+          .array(z.string())
+          .optional()
+          .describe('Only crawl URLs matching at least one of these regex sources'),
+        exclude: z
+          .array(z.string())
+          .optional()
+          .describe('Skip URLs matching any of these regex sources'),
+        respectRobots: z
+          .boolean()
+          .optional()
+          .describe('Fetch and honor robots.txt for the seed origin. Default true'),
+        describeImages: z
+          .boolean()
+          .optional()
+          .describe('Include text descriptions of meaningful images on each page (default false)'),
+        includeMarkdown: z
+          .boolean()
+          .optional()
+          .describe('Include each page\'s full Markdown in the result (default false; can be large)'),
+      },
+      outputSchema: {
+        seed: z.string(),
+        scope: z.enum(['host', 'domain', 'prefix']),
+        stats: z.object({
+          crawled: z.number().int(),
+          failed: z.number().int(),
+          discovered: z.number().int(),
+        }),
+        pages: z.array(crawlPageSchema),
+        graph: z.array(crawlEdgeSchema),
+      },
+      annotations: readOnlyAnnotations,
+    },
+    async ({
+      maxDepth,
+      maxPages,
+      concurrency,
+      scope,
+      delayMs,
+      include,
+      exclude,
+      respectRobots,
+      describeImages,
+      includeMarkdown,
+      ...common
+    }): Promise<CallToolResult> => {
+      try {
+        const summary: CrawlSummary = await crawlSite(common.input, {
+          ...toExtractOptions(common),
+          maxDepth,
+          maxPages: maxPages ?? 25,
+          concurrency,
+          scope,
+          delayMs,
+          include,
+          exclude,
+          respectRobots,
+          describeImages,
+        });
+        const output = {
+          seed: summary.seed,
+          scope: summary.scope,
+          stats: summary.stats,
+          pages: summary.pages.map((p) => ({
+            url: p.url,
+            depth: p.depth,
+            ok: p.ok,
+            title: p.title,
+            error: p.error,
+            markdown: includeMarkdown && p.result ? p.result.markdown : undefined,
+          })),
+          graph: Object.entries(summary.graph).map(([from, to]) => ({ from, to })),
+        };
         return {
           content: [{ type: 'text', text: JSON.stringify(output, null, 2) }],
           structuredContent: output,

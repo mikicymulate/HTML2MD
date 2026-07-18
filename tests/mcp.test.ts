@@ -24,11 +24,11 @@ function textOf(result: CallToolResult): string {
 }
 
 test.describe('MCP server (in-memory transport, real Chromium)', () => {
-  test('lists the three extraction tools', async () => {
+  test('lists the extraction and crawl tools', async () => {
     const client = await connectedClient();
     const { tools } = await client.listTools();
     const names: string[] = tools.map((t) => t.name).sort();
-    expect(names).toEqual(['extract_elements', 'extract_images', 'extract_page']);
+    expect(names).toEqual(['crawl_site', 'extract_elements', 'extract_images', 'extract_page']);
     await client.close();
   });
 
