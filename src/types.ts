@@ -50,6 +50,14 @@ export interface ElementNode {
   howToInteract: string;
 }
 
+/** A hyperlink discovered on a page, resolved to an absolute URL. */
+export interface PageLink {
+  /** Absolute URL with any fragment removed. */
+  url: string;
+  /** Trimmed anchor text (may be empty). */
+  text: string;
+}
+
 export type ImageDescriptionSource = 'alt' | 'caption' | 'title' | 'vision' | 'none';
 
 /** A page image plus whether it was kept and how it was described. */
@@ -74,6 +82,8 @@ export interface PageResult {
   frontmatter: Record<string, unknown>;
   elements: ElementNode[];
   images: ImageDesc[];
+  /** All in-page hyperlinks (absolute, deduped). Present only when `collectLinks` was set. */
+  links?: PageLink[];
   screenshotPath?: string;
   fetchedAt: string;
 }
@@ -110,4 +120,6 @@ export interface ExtractOptions {
   minImageSize?: number;
   /** Maximum number of interactive elements to map. Default 500. */
   maxElements?: number;
+  /** Collect all in-page hyperlinks (absolute, deduped) into `result.links`. Default false. */
+  collectLinks?: boolean;
 }

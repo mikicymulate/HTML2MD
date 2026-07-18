@@ -5,9 +5,10 @@ import type { ExtractedContent } from './extract/clean';
 import { mapElements } from './extract/elements';
 import { collectImages, describeImages } from './extract/images';
 import type { RawImage } from './extract/images';
+import { mapLinks } from './extract/links';
 import { serializeMarkdown } from './serialize/markdown';
 import type { SerializeResult } from './serialize/markdown';
-import type { ExtractOptions, PageResult, ElementNode, ImageDesc } from './types';
+import type { ExtractOptions, PageResult, ElementNode, ImageDesc, PageLink } from './types';
 
 export type {
   ExtractOptions,
@@ -16,10 +17,19 @@ export type {
   ElementKind,
   ImageDesc,
   ImageDescriptionSource,
+  PageLink,
   VisionCaptioner,
   BoundingBox,
 } from './types';
 export { slugify } from './util/slug';
+export { crawlSite } from './crawl/crawler';
+export type {
+  CrawlOptions,
+  CrawlPage,
+  CrawlSummary,
+  CrawlScope,
+  CrawlStats,
+} from './crawl/crawler';
 
 /**
  * Turn a web page into AI-consumable Markdown plus a machine-readable element/image map.
@@ -47,10 +57,12 @@ export async function extractPage(
 
     // 3. Extract main content, interactive elements, and image descriptions in parallel.
     const cleanedHtml: string = await safeContent(rendered.page);
-    const [elements, rawImages]: [ElementNode[], RawImage[]] = await Promise.all([
-      mapElements(rendered.page, { maxElements: options.maxElements }),
-      rendered.page.evaluate(collectImages),
-    ]);
+    const [elements, rawImages, links]: [ElementNode[], RawImage[], PageLink[]] =
+      await Promise.all([
+        mapElements(rendered.page, { maxElements: options.maxElements }),
+        rendered.page.evaluate(collectImages),
+        options.collectLinks ? mapLinks(rendered.page) : Promise.resolve<PageLink[]>([]),
+      ]);
     const content: ExtractedContent = extractContent(cleanedHtml, rendered.url);
     const images: ImageDesc[] = await describeImages(rawImages, {
       describeImages: options.describeImages,
@@ -80,6 +92,7 @@ export async function extractPage(
       frontmatter,
       elements,
       images,
+      links: options.collectLinks ? links : undefined,
       screenshotPath,
       fetchedAt,
     };
