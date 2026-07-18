@@ -4,7 +4,8 @@
   "description": "Turn any web page into clean, AI-consumable Markdown with an interactive-element map and image descriptions.",
   "type": "module",
   "bin": {
-    "html2md": "./dist/cli.js"
+    "html2md": "./dist/cli.js",
+    "html2md-mcp": "./dist/mcp.js"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -29,12 +30,15 @@
     "format": "prettier --write .",
     "test": "playwright test",
     "test:watch": "playwright test --ui",
-    "start": "node dist/cli.js"
+    "start": "node dist/cli.js",
+    "mcp": "node dist/mcp.js"
   },
   "keywords": [
     "html",
     "markdown",
     "ai",
+    "mcp",
+    "model-context-protocol",
     "llm",
     "playwright",
     "readability",
@@ -43,6 +47,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@mozilla/readability": "^0.6.0",
     "commander": "^15.0.0",
     "jsdom": "^29.1.1",
